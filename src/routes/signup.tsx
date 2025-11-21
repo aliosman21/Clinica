@@ -39,7 +39,7 @@ function RouteComponent() {
 
   return <div className=" flex items-center justify-center">
     <div
-      className="max-w-md w-full space-y-4 p-6 border rounded-lg"
+      className="max-w-md w-full space-y-4 p-6 border border-border bg-card text-card-foreground rounded-lg"
     >
       <h1 className="text-2xl font-bold text-center">Sign Up</h1>
 
@@ -86,7 +86,7 @@ function RouteComponent() {
           <button
             onClick={handleSubmit}
             disabled={signupMutation.isPending || !isValid || !isTouched}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {signupMutation.isPending ? 'Signing up...' : 'Sign Up'}
           </button>
@@ -97,7 +97,7 @@ function RouteComponent() {
           <div className="text-red-500 mt-4">
             {signupMutation.data.message}
           </div>
-          {signupMutation.data.userExists && <Link to='/login' className="text-blue-500">Login instead</Link>}
+          {signupMutation.data.userExists && <Link to='/login' className="text-primary hover:text-primary/80">Login instead</Link>}
         </>
       )}
     </div>
