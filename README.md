@@ -13,7 +13,6 @@ A modern clinic management system built with TanStack Start, Prisma, and TypeScr
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd start-basic-auth
    ```
 
 2. **Install dependencies**
