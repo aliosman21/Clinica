@@ -8,6 +8,8 @@ A modern clinic management system built with TanStack Start, Prisma, and TypeScr
 - Lab test orders and tracking
 - User authentication
 
+## Prequisites
+- Needs a postgreSQL database to connect to 
 ## How to Run This App
 
 1. **Clone the repository**
