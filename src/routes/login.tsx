@@ -16,7 +16,7 @@ function RouteComponent() {
     onSuccess: (data) => {
       if (!data?.error) {
         // Navigate to the redirect URL or home
-        navigate({ to: '/' })
+        navigate({ to: '/patients' })
         return
       }
     },

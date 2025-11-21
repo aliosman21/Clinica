@@ -8,6 +8,8 @@ import { getPatient } from '~/server/patients/get-patient'
 import { updatePatient } from '~/server/patients/update-patient'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatDateForInput } from '~/utils/general/formatters'
+import type { Patient, PatientUpdateInput } from '~/types'
 
 export const Route = createFileRoute('/_authed/patients/$patientId/edit')({
     loader: ({ params }) => getPatient({ data: { id: params.patientId } }),
@@ -24,14 +26,7 @@ function EditPatientPage() {
 
     // Mutation for updating patients
     const updatePatientMutation = useMutation({
-        mutationFn: (data: {
-            id: string
-            name?: string
-            dateOfBirth?: string
-            email?: string
-            phone?: string
-            address?: string
-        }) => updatePatientFn({ data }),
+        mutationFn: (data: PatientUpdateInput) => updatePatientFn({ data }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['patients'] })
             queryClient.invalidateQueries({ queryKey: ['patient', patientId] })
@@ -43,12 +38,7 @@ function EditPatientPage() {
         }
     })
 
-    // Format date for input (convert from Date to YYYY-MM-DD string)
-    const formatDateForInput = (date: Date | null) => {
-        if (!date) return ''
-        const d = new Date(date)
-        return d.toISOString().split('T')[0]
-    }
+
 
     // Form for editing patients
     const form = useForm({

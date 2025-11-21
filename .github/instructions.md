@@ -5,3 +5,4 @@
 - All pages should be centered and in the page container unless otherwise specified.
 - Any server call uses React query and Tanstack router's useMutation
 - Never use the alert() function for anything use toasts instead
+- Any custom hook created should be in the src/hooks directory.

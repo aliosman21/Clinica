@@ -43,7 +43,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                     </Activity>
 
                     <h1 className="ml-4 text-xl font-semibold">
-                        <Link to="/" disabled={!user}>
+                        <Link to="/patients" disabled={!user}>
                             <img
                                 src="/tanstack-word-logo-white.svg"
                                 alt="TanStack Logo"
@@ -69,18 +69,6 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                 </div>
 
                 <nav className="flex-1 p-4 overflow-y-auto">
-                    <Link
-                        to="/"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                        activeProps={{
-                            className:
-                                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                        }}
-                    >
-                        <Home size={20} />
-                        <span className="font-medium">Home</span>
-                    </Link>
 
                     <div className="flex flex-row justify-between">
                         <Link
@@ -133,19 +121,54 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                     )}
 
                     {/* Orders Section */}
-                    <Link
-                        to="/orders"
-                        onClick={() => setIsOpen(false)}
-                        activeOptions={{ exact: true }}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-                        activeProps={{
-                            className:
-                                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
-                        }}
-                    >
-                        <StickyNote size={20} />
-                        <span className="font-medium">Orders</span>
-                    </Link>
+                    <div className="flex flex-row justify-between">
+                        <Link
+                            to="/orders"
+                            onClick={() => setIsOpen(false)}
+                            activeOptions={{ exact: true }}
+                            className="flex-1 flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors"
+                            activeProps={{
+                                className:
+                                    'flex-1 flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors',
+                            }}
+                        >
+                            <StickyNote size={20} />
+                            <span className="font-medium">Orders</span>
+                        </Link>
+                        <button
+                            className="px-2 hover:bg-gray-800 rounded-lg transition-colors"
+                            onClick={() =>
+                                setGroupedExpanded((prev) => ({
+                                    ...prev,
+                                    orders: !prev.orders,
+                                }))
+                            }
+                        >
+                            {groupedExpanded.orders ? (
+                                <ChevronDown size={20} />
+                            ) : (
+                                <ChevronRight size={20} />
+                            )}
+                        </button>
+                    </div>
+                    {groupedExpanded.orders && (
+                        <div className="flex flex-col ml-4">
+                            <Link
+                                to="/orders/new"
+                                search={{ patientId: undefined }}
+                                onClick={() => setIsOpen(false)}
+                                activeOptions={{ exact: true }}
+                                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                                activeProps={{
+                                    className:
+                                        'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                                }}
+                            >
+                                <StickyNote size={20} />
+                                <span className="font-medium">New Order</span>
+                            </Link>
+                        </div>
+                    )}
 
                 </nav>
             </aside>

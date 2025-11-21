@@ -4,6 +4,10 @@ import { Badge } from '~/components/ui/badge'
 import { getOrder } from '~/server/orders/get-order'
 import { ArrowLeft, User, Calendar, DollarSign, FileText, Clock, Package, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatCurrency, formatDateWithTime } from '~/utils/general/formatters'
+import { getStatusBadgeVariant, getStatusColor } from '~/utils/general/status-helpers'
+import { calculateOrderTotal, calculateEstimatedReadyDate } from '~/utils/general/order-calculations'
+import type { Order } from '~/types'
 
 export const Route = createFileRoute('/_authed/orders/$orderId/')({
     loader: ({ params }) => getOrder({ data: { id: params.orderId } }),
@@ -13,57 +17,8 @@ export const Route = createFileRoute('/_authed/orders/$orderId/')({
 function OrderDetailsPage() {
     const navigate = useNavigate()
     const order = Route.useLoaderData()
-    const { orderId } = Route.useParams()
 
-    const formatDate = (date: Date | null) => {
-        if (!date) return 'Not set'
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount)
-    }
-
-    const getStatusBadgeVariant = (status: string) => {
-        switch (status) {
-            case 'COMPLETED':
-                return 'default'
-            case 'PENDING':
-                return 'outline'
-            case 'CANCELLED':
-                return 'destructive'
-            default:
-                return 'outline'
-        }
-    }
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'COMPLETED':
-                return 'text-green-600 bg-green-100'
-            case 'PENDING':
-                return 'text-yellow-600 bg-yellow-100'
-            case 'CANCELLED':
-                return 'text-red-600 bg-red-100'
-            default:
-                return 'text-gray-600 bg-gray-100'
-        }
-    }
-
-    const calculateTotalAmount = () => {
-        return order.orderItems.reduce((total: number, item: any) => {
-            return total + (item.labTest.price * item.quantity)
-        }, 0)
-    }
 
     return (
         <div className="container mx-auto py-4 space-y-6">
@@ -185,7 +140,7 @@ function OrderDetailsPage() {
                             <div className="flex justify-between items-center">
                                 <p className="text-lg font-semibold">Total Amount:</p>
                                 <p className="text-2xl font-bold text-green-600">
-                                    {formatCurrency(calculateTotalAmount())}
+                                    {formatCurrency(calculateOrderTotal(order.orderItems))}
                                 </p>
                             </div>
                         </div>

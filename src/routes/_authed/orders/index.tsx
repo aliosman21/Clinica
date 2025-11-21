@@ -2,47 +2,24 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
-import { CustomTable, type TableColumn, type PaginationInfo } from '~/components/Representations/CustomTable'
+import { CustomTable } from '~/components/Representations/CustomTable'
 import { CustomTextInput } from '~/components/Inputs/CustomTextInput'
 import { CustomSelect } from '~/components/Inputs/CustomSelect'
-import { ConfirmDialog, useConfirmDialog } from '~/components/Representations/ConfirmDialog'
+import { ConfirmDialog } from '~/components/Representations/ConfirmDialog'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { getOrders } from '~/server/orders/get-orders'
 import { deleteOrder } from '~/server/orders/delete-order'
 import { useDebounce } from '~/hooks/useDebounce'
-import { Trash2, Eye, Plus, FileText, User, DollarSign } from 'lucide-react'
+import { Trash2, Eye, Plus, FileText } from 'lucide-react'
 import { toast } from 'sonner'
+import { formatCurrency } from '~/utils/general/formatters'
+import { getStatusBadgeVariant } from '~/utils/general/status-helpers'
+import { usePagination } from '~/hooks/usePagination'
+import { useConfirmDialog } from '~/hooks/useConfirmDialog'
+import type { Order, TableColumn } from '~/types'
 
-type Order = {
-    id: string
-    orderNumber: string
-    status: string
-    totalAmount?: number
-    estimatedReady?: Date | null
-    createdAt: Date
-    updatedAt: Date
-    patient: {
-        id: string
-        name: string
-        email: string | null
-        phone: string | null
-    }
-    orderItems: Array<{
-        id: string
-        quantity: number
-        unitPrice: number
-        labTest: {
-            id: string
-            code: string
-            name: string
-            price?: number
-        }
-    }>
-    _count: {
-        orderItems: number
-    }
-}
+
 
 const statusOptions = [
     { value: '', label: 'All Statuses' },
@@ -52,7 +29,6 @@ const statusOptions = [
 ]
 
 export const Route = createFileRoute('/_authed/orders/')({
-    loader: () => getOrders({ data: { limit: 25, offset: 0 } }),
     component: OrdersPage,
 })
 
@@ -64,11 +40,9 @@ function OrdersPage() {
     const [selectedStatus, setSelectedStatus] = useState('')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
     const debouncedPatientSearch = useDebounce(patientSearch, 500)
-    const [pagination, setPagination] = useState<PaginationInfo>({
-        total: 0,
-        limit: 5,
-        offset: 0,
-        hasMore: false
+    const { pagination, handlePageChange, handlePageSizeChange, updateTotal } = usePagination({
+        initialLimit: 5,
+        dependencies: [debouncedSearchTerm, debouncedPatientSearch, selectedStatus]
     })
     const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
 
@@ -96,10 +70,14 @@ function OrdersPage() {
         staleTime: 30000, // 30 seconds
     })
 
-    // Reset pagination when search terms change
+    // Update total when data is fetched
     useEffect(() => {
-        setPagination(prev => ({ ...prev, offset: 0 }))
-    }, [debouncedSearchTerm, debouncedPatientSearch, selectedStatus])
+        if (ordersData?.pagination?.total !== undefined) {
+            updateTotal(ordersData.pagination.total)
+        }
+    }, [ordersData?.pagination?.total, updateTotal])
+
+
 
     // Mutation for deleting orders
     const deleteOrderMutation = useMutation({
@@ -127,13 +105,7 @@ function OrdersPage() {
         setSelectedStatus(status)
     }
 
-    const handlePageChange = (offset: number) => {
-        setPagination(prev => ({ ...prev, offset }))
-    }
 
-    const handlePageSizeChange = (limit: number) => {
-        setPagination(prev => ({ ...prev, limit, offset: 0 }))
-    }
 
     const handleDeleteOrder = (orderId: string) => {
         openDialog({
@@ -149,29 +121,12 @@ function OrdersPage() {
         })
     }
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount)
-    }
 
-    const getStatusBadgeVariant = (status: string) => {
-        switch (status) {
-            case 'COMPLETED':
-                return 'default'
 
-            case 'PENDING':
-                return 'outline'
-            case 'CANCELLED':
-                return 'destructive'
-            default:
-                return 'outline'
-        }
-    }
 
+
+    // Use local pagination state - server data is only for validation
     const orders = ordersData?.orders || []
-    const currentPagination = ordersData?.pagination || pagination
 
     const columns: TableColumn<Order>[] = [
         {
@@ -195,7 +150,7 @@ function OrdersPage() {
             header: 'Tests',
             render: (order) => (
                 <div>
-                    <p className="text-sm">{order._count.orderItems} test{order._count.orderItems !== 1 ? 's' : ''}</p>
+                    <p className="text-sm">{order._count?.orderItems || order.orderItems.length} test{(order._count?.orderItems || order.orderItems.length) !== 1 ? 's' : ''}</p>
                     {order.orderItems.slice(0, 2).map(item => (
                         <p key={item.id} className="text-xs text-muted-foreground">
                             {item.labTest.name}
@@ -213,8 +168,8 @@ function OrdersPage() {
             key: 'totalAmount',
             header: 'Total',
             render: (order) => {
-                const total = (order as any).totalAmount ||
-                    (order.orderItems?.reduce((sum: number, item: any) =>
+                const total = order.totalCost ||
+                    (order.orderItems?.reduce((sum: number, item) =>
                         sum + ((item.unitPrice || item.labTest?.price || 0) * item.quantity), 0
                     ) || 0)
                 return <span className="font-medium">{formatCurrency(total)}</span>
@@ -235,8 +190,8 @@ function OrdersPage() {
             key: 'estimatedReady',
             header: 'Est. Ready',
             render: (order) =>
-                (order as any).estimatedReady
-                    ? new Date((order as any).estimatedReady).toLocaleDateString()
+                order.estimatedReady
+                    ? new Date(order.estimatedReady).toLocaleDateString()
                     : 'TBD',
             className: 'text-muted-foreground text-sm'
         },
@@ -272,10 +227,14 @@ function OrdersPage() {
                         Manage lab test orders and their statuses
                     </p>
                 </div>
-                {/* <Button onClick={() => navigate({ to: '/orders/new' })}>
+                <Button onClick={() => navigate({
+                    to: '/orders/new', search: {
+                        patientId: undefined
+                    }
+                })}>
                     <Plus className="h-4 w-4 mr-2" />
                     New Order
-                </Button> */}
+                </Button>
             </div>
 
             {/* Search and Filters */}
@@ -354,7 +313,7 @@ function OrdersPage() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
-                            <p className="text-2xl font-bold">{currentPagination.total}</p>
+                            <p className="text-2xl font-bold">{pagination.total}</p>
                         </div>
                         <FileText className="h-8 w-8 text-blue-500" />
                     </div>
@@ -398,7 +357,7 @@ function OrdersPage() {
             <CustomTable
                 data={orders}
                 columns={columns}
-                pagination={currentPagination}
+                pagination={pagination}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
                 loading={isLoading}

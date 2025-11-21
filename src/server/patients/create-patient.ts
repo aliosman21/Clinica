@@ -1,16 +1,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { prismaClient } from '~/utils/database/prisma'
 import { authMiddleware } from '~/server/middlewares/middleware'
+import type { PatientCreateInput } from '~/types'
 
 export const createPatient = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
-    .inputValidator((data: {
-        name: string
-        dateOfBirth: string
-        email?: string
-        phone?: string
-        address?: string
-    }) => data)
+    .inputValidator((data: PatientCreateInput) => data)
     .handler(async ({ data }) => {
         try {
             const patient = await prismaClient.patient.create({

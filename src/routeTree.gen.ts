@@ -16,6 +16,7 @@ import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedPatientsIndexRouteImport } from './routes/_authed/patients/index'
 import { Route as AuthedOrdersIndexRouteImport } from './routes/_authed/orders/index'
 import { Route as AuthedPatientsNewRouteImport } from './routes/_authed/patients/new'
+import { Route as AuthedOrdersNewRouteImport } from './routes/_authed/orders/new'
 import { Route as AuthedPatientsPatientIdIndexRouteImport } from './routes/_authed/patients/$patientId/index'
 import { Route as AuthedOrdersOrderIdIndexRouteImport } from './routes/_authed/orders/$orderId/index'
 import { Route as AuthedPatientsPatientIdEditRouteImport } from './routes/_authed/patients/$patientId/edit'
@@ -54,6 +55,11 @@ const AuthedPatientsNewRoute = AuthedPatientsNewRouteImport.update({
   path: '/patients/new',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
+const AuthedOrdersNewRoute = AuthedOrdersNewRouteImport.update({
+  id: '/orders/new',
+  path: '/orders/new',
+  getParentRoute: () => AuthedRouteRoute,
+} as any)
 const AuthedPatientsPatientIdIndexRoute =
   AuthedPatientsPatientIdIndexRouteImport.update({
     id: '/patients/$patientId/',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/': typeof AuthedIndexRoute
+  '/orders/new': typeof AuthedOrdersNewRoute
   '/patients/new': typeof AuthedPatientsNewRoute
   '/orders': typeof AuthedOrdersIndexRoute
   '/patients': typeof AuthedPatientsIndexRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/': typeof AuthedIndexRoute
+  '/orders/new': typeof AuthedOrdersNewRoute
   '/patients/new': typeof AuthedPatientsNewRoute
   '/orders': typeof AuthedOrdersIndexRoute
   '/patients': typeof AuthedPatientsIndexRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/orders/new': typeof AuthedOrdersNewRoute
   '/_authed/patients/new': typeof AuthedPatientsNewRoute
   '/_authed/orders/': typeof AuthedOrdersIndexRoute
   '/_authed/patients/': typeof AuthedPatientsIndexRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/'
+    | '/orders/new'
     | '/patients/new'
     | '/orders'
     | '/patients'
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/'
+    | '/orders/new'
     | '/patients/new'
     | '/orders'
     | '/patients'
@@ -137,6 +148,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/_authed/'
+    | '/_authed/orders/new'
     | '/_authed/patients/new'
     | '/_authed/orders/'
     | '/_authed/patients/'
@@ -202,6 +214,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedPatientsNewRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
+    '/_authed/orders/new': {
+      id: '/_authed/orders/new'
+      path: '/orders/new'
+      fullPath: '/orders/new'
+      preLoaderRoute: typeof AuthedOrdersNewRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
     '/_authed/patients/$patientId/': {
       id: '/_authed/patients/$patientId/'
       path: '/patients/$patientId'
@@ -228,6 +247,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteRouteChildren {
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedOrdersNewRoute: typeof AuthedOrdersNewRoute
   AuthedPatientsNewRoute: typeof AuthedPatientsNewRoute
   AuthedOrdersIndexRoute: typeof AuthedOrdersIndexRoute
   AuthedPatientsIndexRoute: typeof AuthedPatientsIndexRoute
@@ -238,6 +258,7 @@ interface AuthedRouteRouteChildren {
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedOrdersNewRoute: AuthedOrdersNewRoute,
   AuthedPatientsNewRoute: AuthedPatientsNewRoute,
   AuthedOrdersIndexRoute: AuthedOrdersIndexRoute,
   AuthedPatientsIndexRoute: AuthedPatientsIndexRoute,

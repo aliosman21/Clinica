@@ -3,6 +3,8 @@ import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { getPatient } from '~/server/patients/get-patient'
 import { ArrowLeft, Edit, Calendar, Activity, Eye, DollarSign, Clock, FileText } from 'lucide-react'
+import { calculateAge, formatCurrency, formatDate } from '~/utils/general/formatters'
+import { getStatusBadgeVariant } from '~/utils/general/status-helpers'
 
 export const Route = createFileRoute('/_authed/patients/$patientId/')({
     loader: ({ params }) => getPatient({ data: { id: params.patientId } }),
@@ -14,48 +16,6 @@ function PatientDetailsPage() {
     const patient = Route.useLoaderData()
     const { patientId } = Route.useParams()
 
-    const formatDate = (date: Date | null) => {
-        if (!date) return 'Not provided'
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        })
-    }
-
-    const calculateAge = (birthDate: Date | null) => {
-        if (!birthDate) return 'Unknown'
-        const today = new Date()
-        const birth = new Date(birthDate)
-        let age = today.getFullYear() - birth.getFullYear()
-        const monthDiff = today.getMonth() - birth.getMonth()
-
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-            age--
-        }
-
-        return age
-    }
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount)
-    }
-
-    const getStatusBadgeVariant = (status: string) => {
-        switch (status) {
-            case 'COMPLETED':
-                return 'default'
-            case 'PENDING':
-                return 'outline'
-            case 'CANCELLED':
-                return 'destructive'
-            default:
-                return 'outline'
-        }
-    }
 
     return (
         <div className="container mx-auto py-4 space-y-6">
@@ -77,12 +37,21 @@ function PatientDetailsPage() {
                         Patient Details
                     </p>
                 </div>
-                <Button
-                    onClick={() => navigate({ to: '/patients/$patientId/edit', params: { patientId } })}
-                >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Patient
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate({ to: '/orders/new', search: { patientId } })}
+                    >
+                        <FileText className="h-4 w-4 mr-2" />
+                        New Order
+                    </Button>
+                    <Button
+                        onClick={() => navigate({ to: '/patients/$patientId/edit', params: { patientId } })}
+                    >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Patient
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

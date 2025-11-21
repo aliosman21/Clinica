@@ -73,13 +73,19 @@ export const getOrders = createServerFn({ method: 'GET' })
                 prismaClient.order.count({ where })
             ])
 
+            const totalPages = Math.ceil(total / limit)
+            const currentPage = Math.floor(offset / limit) + 1
+            const hasMore = offset + limit < total
+
             return {
                 orders,
                 pagination: {
                     total,
                     limit,
                     offset,
-                    hasMore: offset + limit < total
+                    currentPage,
+                    totalPages,
+                    hasMore
                 }
             }
         } catch (error) {

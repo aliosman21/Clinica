@@ -2,17 +2,21 @@ import { createServerFn } from '@tanstack/react-start'
 import { prismaClient } from '~/utils/database/prisma'
 import { authMiddleware } from '~/server/middlewares/middleware'
 import { OrderStatus } from '@prisma/client'
+import type { OrderCreateInput } from '~/types'
+
+// Generate a 10-character alphanumeric order number
+function generateOrderNumber(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 10; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+}
 
 export const createOrder = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
-    .inputValidator((data: {
-        patientId: string
-        notes?: string
-        orderItems: Array<{
-            labTestId: string
-            quantity: number
-        }>
-    }) => data)
+    .inputValidator((data: OrderCreateInput) => data)
     .handler(async ({ data }) => {
         try {
             // Validate patient exists
@@ -54,11 +58,25 @@ export const createOrder = createServerFn({ method: 'POST' })
                 }
             })
 
+            // Generate unique order number
+            let orderNumber = generateOrderNumber()
+            let existingOrder = await prismaClient.order.findUnique({
+                where: { orderNumber }
+            })
+
+            while (existingOrder) {
+                orderNumber = generateOrderNumber()
+                existingOrder = await prismaClient.order.findUnique({
+                    where: { orderNumber }
+                })
+            }
+
             const estimatedReady = new Date()
             estimatedReady.setHours(estimatedReady.getHours() + maxTurnaroundHours)
 
             const order = await prismaClient.order.create({
                 data: {
+                    orderNumber,
                     patientId: data.patientId,
                     notes: data.notes || null,
                     totalCost,
@@ -84,6 +102,7 @@ export const createOrder = createServerFn({ method: 'POST' })
 
             return order
         } catch (error) {
+            console.error('Error creating order:', error)
             throw new Error('Failed to create order')
         }
     })

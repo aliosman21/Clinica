@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
 import { CustomTable, type TableColumn, type PaginationInfo } from '~/components/Representations/CustomTable'
 import { CustomTextInput } from '~/components/Inputs/CustomTextInput'
-import { ConfirmDialog, useConfirmDialog } from '~/components/Representations/ConfirmDialog'
+import { ConfirmDialog } from '~/components/Representations/ConfirmDialog'
+import { useConfirmDialog } from '~/hooks/useConfirmDialog'
+import { usePagination } from '~/hooks/usePagination'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
 import { getPatients } from '~/server/patients/get-patients'
@@ -12,21 +14,11 @@ import { deletePatient } from '~/server/patients/delete-patient'
 import { useDebounce } from '~/hooks/useDebounce'
 import { Trash2, Edit, Plus, Eye } from 'lucide-react'
 import { toast } from 'sonner'
+import type { Patient } from '~/types'
 
-type Patient = {
-    id: string
-    name: string
-    email: string | null
-    phone: string | null
-    dateOfBirth: Date | null
-    createdAt: Date
-    _count: {
-        orders: number
-    }
-}
+
 
 export const Route = createFileRoute('/_authed/patients/')({
-    loader: () => getPatients({ data: { limit: 5, offset: 0 } }),
     component: PatientsPage,
 })
 
@@ -35,13 +27,12 @@ function PatientsPage() {
     const queryClient = useQueryClient()
     const [searchTerm, setSearchTerm] = useState('')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
-    const [pagination, setPagination] = useState<PaginationInfo>({
-        total: 0,
-        limit: 5,
-        offset: 0,
-        hasMore: false
+    const { pagination, handlePageChange, handlePageSizeChange, updateTotal } = usePagination({
+        initialLimit: 5,
+        dependencies: [debouncedSearchTerm]
     })
     const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+
     // Server functions
     const getPatientsFn = useServerFn(getPatients)
     const deletePatientFn = useServerFn(deletePatient)
@@ -64,10 +55,14 @@ function PatientsPage() {
         staleTime: 30000, // 30 seconds
     })
 
-    // Reset pagination when search term changes
+    // Update total when data is fetched
     useEffect(() => {
-        setPagination(prev => ({ ...prev, offset: 0 }))
-    }, [debouncedSearchTerm])
+        if (patientsData?.pagination?.total !== undefined) {
+            updateTotal(patientsData.pagination.total)
+        }
+    }, [patientsData?.pagination?.total, updateTotal])
+
+
 
     // Mutation for deleting patients
     const deletePatientMutation = useMutation({
@@ -87,15 +82,13 @@ function PatientsPage() {
         setSearchTerm(term)
     }
 
-    const handlePageChange = (offset: number) => {
-        setPagination(prev => ({ ...prev, offset }))
-    }
 
-    const handlePageSizeChange = (limit: number) => {
-        setPagination(prev => ({ ...prev, limit, offset: 0 }))
-    }
 
     const handleDeletePatient = (patientId: string) => {
+        if (patientsData?.patients.find(p => p.id === patientId)?._count.orders! > 0) {
+            toast.error('Cannot delete patient with existing orders.')
+            return
+        }
         openDialog({
             title: 'Delete Patient',
             description: 'Are you sure you want to delete this patient? This action cannot be undone.',
@@ -110,7 +103,8 @@ function PatientsPage() {
     }
 
     const patients = patientsData?.patients || []
-    const currentPagination = patientsData?.pagination || pagination
+
+    // Use local pagination state - server data is only for validation
 
     const columns: TableColumn<Patient>[] = [
         {
@@ -147,7 +141,7 @@ function PatientsPage() {
             headerClassName: 'text-center',
             render: (patient) => (
                 <Badge variant="secondary">
-                    {patient._count.orders} orders
+                    {patient._count?.orders || 0} orders
                 </Badge>
             ),
             className: 'text-center'
@@ -223,7 +217,7 @@ function PatientsPage() {
             <CustomTable
                 data={patients}
                 columns={columns}
-                pagination={currentPagination}
+                pagination={pagination}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
                 loading={isLoading}

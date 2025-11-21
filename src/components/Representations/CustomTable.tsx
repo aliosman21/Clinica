@@ -26,6 +26,8 @@ export interface PaginationInfo {
     total: number
     limit: number
     offset: number
+    currentPage: number
+    totalPages: number
     hasMore: boolean
 }
 
@@ -54,14 +56,13 @@ export function CustomTable<T = any>({
     onRowClick,
     actions,
 }: CustomTableProps<T>) {
-    const currentPage = pagination ? Math.floor(pagination.offset / pagination.limit) + 1 : 1
-    const totalPages = pagination ? Math.ceil(pagination.total / pagination.limit) : 1
+    const currentPage = pagination?.currentPage || 1
+    const totalPages = pagination?.totalPages || 1
     const pageSizes = [5, 10, 25, 50]
 
     const handlePageChange = (page: number) => {
-        if (pagination && onPageChange) {
-            const newOffset = (page - 1) * pagination.limit
-            onPageChange(newOffset)
+        if (onPageChange) {
+            onPageChange(page)
         }
     }
 
