@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
+import { useForm } from '@tanstack/react-form'
 import { CustomTable, type TableColumn, type PaginationInfo } from '~/components/Representations/CustomTable'
 import { CustomTextInput } from '~/components/Inputs/CustomTextInput'
 import { ConfirmDialog } from '~/components/Representations/ConfirmDialog'
@@ -32,6 +33,14 @@ function PatientsPage() {
         dependencies: [debouncedSearchTerm]
     })
     const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+
+    // Form for search filters
+    const searchForm = useForm({
+        defaultValues: {
+            search: ''
+        },
+        onSubmit: () => { } // Not used, form is just for field management
+    })
 
     // Server functions
     const getPatientsFn = useServerFn(getPatients)
@@ -190,26 +199,30 @@ function PatientsPage() {
             {/* Search */}
             <div className="flex items-center space-x-2">
                 <div className="flex-1 max-w-sm">
-                    <CustomTextInput
-                        field={{
-                            name: 'search',
-                            state: {
-                                value: searchTerm,
-                                meta: {
-                                    errors: [],
-                                    isTouched: false,
-                                    isBlurred: false,
-                                    isDirty: false,
-                                    errorMap: {},
-                                    errorSourceMap: {},
-                                    isValidating: false
-                                }
-                            },
-                            handleChange: handleSearch,
-                            handleBlur: () => { }
+                    <searchForm.Field
+                        name="search"
+                    >
+                        {(field) => {
+                            // Sync with local state
+                            if (field.state.value !== searchTerm) {
+                                field.handleChange(searchTerm)
+                            }
+                            return (
+                                <CustomTextInput
+                                    field={{
+                                        name: field.name,
+                                        state: field.state,
+                                        handleChange: (value: string) => {
+                                            field.handleChange(value)
+                                            handleSearch(value)
+                                        },
+                                        handleBlur: field.handleBlur
+                                    }}
+                                    placeholder="Search patients by name..."
+                                />
+                            )
                         }}
-                        placeholder="Search patients by name..."
-                    />
+                    </searchForm.Field>
                 </div>
             </div>
 

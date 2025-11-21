@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
+import { useForm } from '@tanstack/react-form'
 import { CustomTable } from '~/components/Representations/CustomTable'
 import { CustomTextInput } from '~/components/Inputs/CustomTextInput'
 import { CustomSelect } from '~/components/Inputs/CustomSelect'
@@ -45,6 +46,16 @@ function OrdersPage() {
         dependencies: [debouncedSearchTerm, debouncedPatientSearch, selectedStatus]
     })
     const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+
+    // Form for search filters
+    const searchForm = useForm({
+        defaultValues: {
+            orderNumber: '',
+            patientName: '',
+            status: ''
+        },
+        onSubmit: () => { } // Not used, form is just for field management
+    })
 
     // Server functions
     const getOrdersFn = useServerFn(getOrders)
@@ -253,72 +264,84 @@ function OrdersPage() {
 
             {/* Search and Filters */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <CustomTextInput
-                    field={{
-                        name: 'orderSearch',
-                        state: {
-                            value: searchTerm,
-                            meta: {
-                                errors: [],
-                                isTouched: false,
-                                isBlurred: false,
-                                isDirty: false,
-                                errorMap: {},
-                                errorSourceMap: {},
-                                isValidating: false
-                            }
-                        },
-                        handleChange: handleOrderNumberSearch,
-                        handleBlur: () => { }
+                <searchForm.Field
+                    name="orderNumber"
+                >
+                    {(field) => {
+                        // Sync with local state
+                        if (field.state.value !== searchTerm) {
+                            field.handleChange(searchTerm)
+                        }
+                        return (
+                            <CustomTextInput
+                                field={{
+                                    name: field.name,
+                                    state: field.state,
+                                    handleChange: (value: string) => {
+                                        field.handleChange(value)
+                                        handleOrderNumberSearch(value)
+                                    },
+                                    handleBlur: field.handleBlur
+                                }}
+                                placeholder="Search by order number..."
+                                label="Order Number"
+                            />
+                        )
                     }}
-                    placeholder="Search by order number..."
-                    label="Order Number"
-                />
+                </searchForm.Field>
 
-                <CustomTextInput
-                    field={{
-                        name: 'patientSearch',
-                        state: {
-                            value: patientSearch,
-                            meta: {
-                                errors: [],
-                                isTouched: false,
-                                isBlurred: false,
-                                isDirty: false,
-                                errorMap: {},
-                                errorSourceMap: {},
-                                isValidating: false
-                            }
-                        },
-                        handleChange: handlePatientNameSearch,
-                        handleBlur: () => { }
+                <searchForm.Field
+                    name="patientName"
+                >
+                    {(field) => {
+                        // Sync with local state
+                        if (field.state.value !== patientSearch) {
+                            field.handleChange(patientSearch)
+                        }
+                        return (
+                            <CustomTextInput
+                                field={{
+                                    name: field.name,
+                                    state: field.state,
+                                    handleChange: (value: string) => {
+                                        field.handleChange(value)
+                                        handlePatientNameSearch(value)
+                                    },
+                                    handleBlur: field.handleBlur
+                                }}
+                                placeholder="Search by patient name..."
+                                label="Patient Name"
+                            />
+                        )
                     }}
-                    placeholder="Search by patient name..."
-                    label="Patient Name"
-                />
+                </searchForm.Field>
 
-                <CustomSelect
-                    field={{
-                        name: 'statusFilter',
-                        state: {
-                            value: selectedStatus,
-                            meta: {
-                                errors: [],
-                                isTouched: false,
-                                isBlurred: false,
-                                isDirty: false,
-                                errorMap: {},
-                                errorSourceMap: {},
-                                isValidating: false
-                            }
-                        },
-                        handleChange: handleStatusChange,
-                        handleBlur: () => { }
+                <searchForm.Field
+                    name="status"
+                >
+                    {(field) => {
+                        // Sync with local state
+                        if (field.state.value !== selectedStatus) {
+                            field.handleChange(selectedStatus)
+                        }
+                        return (
+                            <CustomSelect
+                                field={{
+                                    name: field.name,
+                                    state: field.state,
+                                    handleChange: (value: string) => {
+                                        field.handleChange(value)
+                                        handleStatusChange(value)
+                                    },
+                                    handleBlur: field.handleBlur
+                                }}
+                                options={statusOptions}
+                                label="Status Filter"
+                                placeholder="Select status..."
+                            />
+                        )
                     }}
-                    options={statusOptions}
-                    label="Status Filter"
-                    placeholder="Select status..."
-                />
+                </searchForm.Field>
             </div>
 
             {/* Statistics Cards */}

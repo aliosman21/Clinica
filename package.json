@@ -8,6 +8,7 @@
     "build": "vite build",
     "start": "vite start",
     "prisma-generate": "prisma generate",
+    "prisma-migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "test": "vitest",
     "cy:open": "cypress open",

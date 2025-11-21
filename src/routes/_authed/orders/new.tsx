@@ -42,6 +42,14 @@ function NewOrderPage() {
     const search = Route.useSearch()
     const [orderItems, setOrderItems] = useState<OrderItemForm[]>([])
 
+    // Form for lab test selection
+    const labTestSelectionForm = useForm({
+        defaultValues: {
+            labTestSelection: ''
+        },
+        onSubmit: () => { } // Not used, form is just for field management
+    })
+
     // Server functions
     const createOrderFn = useServerFn(createOrder)
 
@@ -192,34 +200,32 @@ function NewOrderPage() {
                                 <h2 className="text-xl font-semibold">Lab Tests</h2>
                                 {labTestOptions.length > 0 && (
                                     <div className="max-w-md">
-                                        <CustomComboBox
-                                            field={{
-                                                name: 'labTestSelection',
-                                                state: {
-                                                    value: '',
-                                                    meta: {
-                                                        errors: [],
-                                                        isTouched: false,
-                                                        isBlurred: false,
-                                                        isDirty: false,
-                                                        errorMap: {},
-                                                        errorSourceMap: {},
-                                                        isValidating: false
-                                                    }
-                                                },
-                                                handleChange: (labTestId: string) => {
-                                                    if (labTestId) {
-                                                        addOrderItem(labTestId)
-                                                    }
-                                                },
-                                                handleBlur: () => { }
-                                            }}
-                                            placeholder="Add a lab test..."
-                                            options={labTestOptions}
-                                            label="Add Lab Test"
-                                            searchPlaceholder="Search lab tests..."
-                                            emptyText="No lab tests available."
-                                        />
+                                        <labTestSelectionForm.Field
+                                            name="labTestSelection"
+                                        >
+                                            {(field) => (
+                                                <CustomComboBox
+                                                    field={{
+                                                        name: field.name,
+                                                        state: field.state,
+                                                        handleChange: (labTestId: string) => {
+                                                            field.handleChange(labTestId)
+                                                            if (labTestId) {
+                                                                addOrderItem(labTestId)
+                                                                // Reset selection after adding
+                                                                field.handleChange('')
+                                                            }
+                                                        },
+                                                        handleBlur: field.handleBlur
+                                                    }}
+                                                    placeholder="Add a lab test..."
+                                                    options={labTestOptions}
+                                                    label="Add Lab Test"
+                                                    searchPlaceholder="Search lab tests..."
+                                                    emptyText="No lab tests available."
+                                                />
+                                            )}
+                                        </labTestSelectionForm.Field>
                                     </div>
                                 )}
                             </div>

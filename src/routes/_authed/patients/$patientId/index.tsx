@@ -1,8 +1,14 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useServerFn } from '@tanstack/react-start'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
+import { ConfirmDialog } from '~/components/Representations/ConfirmDialog'
 import { getPatient } from '~/server/patients/get-patient'
-import { ArrowLeft, Edit, Calendar, Activity, Eye, DollarSign, Clock, FileText } from 'lucide-react'
+import { deletePatient } from '~/server/patients/delete-patient'
+import { useConfirmDialog } from '~/hooks/useConfirmDialog'
+import { ArrowLeft, Edit, Calendar, Activity, Eye, DollarSign, Clock, FileText, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { calculateAge, formatCurrency, formatDate } from '~/utils/general/formatters'
 import { getStatusBadgeVariant } from '~/utils/general/status-helpers'
 
@@ -13,8 +19,45 @@ export const Route = createFileRoute('/_authed/patients/$patientId/')({
 
 function PatientDetailsPage() {
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
     const patient = Route.useLoaderData()
     const { patientId } = Route.useParams()
+    const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+
+    // Server functions
+    const deletePatientFn = useServerFn(deletePatient)
+
+    // Mutation for deleting patient
+    const deletePatientMutation = useMutation({
+        mutationFn: (id: string) => deletePatientFn({ data: { id } }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['patients'] })
+            toast.success('Patient deleted successfully')
+            navigate({ to: '/patients' })
+        },
+        onError: (error) => {
+            toast.error('Error deleting patient: ' + (error as Error).message)
+            closeDialog()
+        }
+    })
+
+    const handleDeletePatient = () => {
+        if (patient._count.orders > 0) {
+            toast.error('Cannot delete patient with existing orders.')
+            return
+        }
+        openDialog({
+            title: 'Delete Patient',
+            description: 'Are you sure you want to delete this patient? This action cannot be undone.',
+            id: patient.id,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            variant: 'destructive',
+            onConfirm: (id: string) => {
+                deletePatientMutation.mutate(id)
+            }
+        })
+    }
 
 
     return (
@@ -50,6 +93,15 @@ function PatientDetailsPage() {
                     >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit Patient
+                    </Button>
+                    <Button
+                        variant="destructive"
+                        onClick={handleDeletePatient}
+                        disabled={deletePatientMutation.isPending || patient._count.orders > 0}
+                        title={patient._count.orders > 0 ? 'Cannot delete patient with existing orders' : 'Delete patient'}
+                    >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                     </Button>
                 </div>
             </div>
@@ -245,6 +297,20 @@ function PatientDetailsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={dialogState.isOpen}
+                onClose={closeDialog}
+                onConfirm={handleConfirm}
+                title={dialogState.title}
+                description={dialogState.description}
+                confirmText={dialogState.confirmText}
+                cancelText={dialogState.cancelText}
+                id={dialogState.id}
+                variant={dialogState.variant}
+                isLoading={deletePatientMutation.isPending}
+            />
         </div>
     )
 }

@@ -1,8 +1,13 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useServerFn } from '@tanstack/react-start'
 import { Button } from '~/components/ui/button'
 import { Badge } from '~/components/ui/badge'
+import { ConfirmDialog } from '~/components/Representations/ConfirmDialog'
 import { getOrder } from '~/server/orders/get-order'
-import { ArrowLeft, User, Calendar, DollarSign, FileText, Clock, Package, MapPin } from 'lucide-react'
+import { deleteOrder } from '~/server/orders/delete-order'
+import { useConfirmDialog } from '~/hooks/useConfirmDialog'
+import { ArrowLeft, User, Calendar, DollarSign, FileText, Clock, Package, MapPin, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency, formatDateWithTime } from '~/utils/general/formatters'
 import { getStatusBadgeVariant, getStatusColor } from '~/utils/general/status-helpers'
@@ -16,7 +21,40 @@ export const Route = createFileRoute('/_authed/orders/$orderId/')({
 
 function OrderDetailsPage() {
     const navigate = useNavigate()
+    const queryClient = useQueryClient()
     const order = Route.useLoaderData()
+    const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+
+    // Server functions
+    const deleteOrderFn = useServerFn(deleteOrder)
+
+    // Mutation for deleting order
+    const deleteOrderMutation = useMutation({
+        mutationFn: (id: string) => deleteOrderFn({ data: { id } }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['orders'] })
+            toast.success('Order deleted successfully')
+            navigate({ to: '/orders' })
+        },
+        onError: (error) => {
+            toast.error('Error deleting order: ' + (error as Error).message)
+            closeDialog()
+        }
+    })
+
+    const handleDeleteOrder = () => {
+        openDialog({
+            title: 'Delete Order',
+            description: 'Are you sure you want to delete this order? This action cannot be undone.',
+            id: order.id,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            variant: 'destructive',
+            onConfirm: (id: string) => {
+                deleteOrderMutation.mutate(id)
+            }
+        })
+    }
 
 
 
@@ -40,6 +78,15 @@ function OrderDetailsPage() {
                         </p>
                     </div>
                     <div className="flex items-center space-x-2">
+                        <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleDeleteOrder}
+                            disabled={deleteOrderMutation.isPending}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Order
+                        </Button>
                         <Badge variant={getStatusBadgeVariant(order.status) as any} className="text-lg px-3 py-1">
                             {order.status}
                         </Badge>
@@ -222,6 +269,20 @@ function OrderDetailsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={dialogState.isOpen}
+                onClose={closeDialog}
+                onConfirm={handleConfirm}
+                title={dialogState.title}
+                description={dialogState.description}
+                confirmText={dialogState.confirmText}
+                cancelText={dialogState.cancelText}
+                id={dialogState.id}
+                variant={dialogState.variant}
+                isLoading={deleteOrderMutation.isPending}
+            />
         </div>
     )
 }

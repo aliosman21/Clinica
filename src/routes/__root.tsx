@@ -11,7 +11,6 @@ import { DefaultCatchBoundary } from '~/components/Layout/DefaultCatchBoundary.j
 import Header from '~/components/Layout/Header'
 import { NotFound } from '~/components/Layout/NotFound.js'
 import appCss from '~/styles/app.css?url'
-import { seo } from '~/utils/general/seo.js'
 import { fetchUser } from '~/server/auth/user'
 import { Toaster } from 'sonner'
 
@@ -34,11 +33,6 @@ export const Route = createRootRoute({
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
-      ...seo({
-        title:
-          'Clinica',
-        description: `Simple lab tests management system.`,
-      }),
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
