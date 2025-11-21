@@ -83,6 +83,7 @@ export const getOrders = createServerFn({ method: 'GET' })
                 }
             }
         } catch (error) {
+            console.error(error)
             throw new Error('Failed to fetch orders')
         }
     })

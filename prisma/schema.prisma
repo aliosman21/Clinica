@@ -46,7 +46,7 @@ model LabTest {
 
 model Order {
   id             String      @id @default(uuid())
-  orderNumber    String      @unique @default(uuid())
+  orderNumber    String      @unique
   patientId      String
   status         OrderStatus @default(PENDING)
   totalCost      Float       @default(0)
@@ -77,7 +77,6 @@ model OrderItem {
 
 enum OrderStatus {
   PENDING
-  IN_PROGRESS
   COMPLETED
   CANCELLED
 }

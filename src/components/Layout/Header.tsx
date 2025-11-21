@@ -82,12 +82,9 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                         <span className="font-medium">Home</span>
                     </Link>
 
-                    {/* Demo Links Start */}
-
-
                     <div className="flex flex-row justify-between">
                         <Link
-                            to="/posts"
+                            to="/patients"
                             onClick={() => setIsOpen(false)}
                             activeOptions={{ exact: true }}
 
@@ -98,29 +95,28 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                             }}
                         >
                             <StickyNote size={20} />
-                            <span className="font-medium">Posts</span>
+                            <span className="font-medium">Patients</span>
                         </Link>
                         <button
                             className="px-2 hover:bg-gray-800 rounded-lg transition-colors"
                             onClick={() =>
                                 setGroupedExpanded((prev) => ({
                                     ...prev,
-                                    posts: !prev.posts,
+                                    patients: !prev.patients,
                                 }))
                             }
                         >
-                            {groupedExpanded.posts ? (
+                            {groupedExpanded.patients ? (
                                 <ChevronDown size={20} />
                             ) : (
                                 <ChevronRight size={20} />
                             )}
                         </button>
                     </div>
-                    {groupedExpanded.posts && (
+                    {groupedExpanded.patients && (
                         <div className="flex flex-col ml-4">
                             <Link
-                                to="/posts/$postId"
-                                params={{ postId: '1' }}
+                                to="/patients/new"
                                 onClick={() => setIsOpen(false)}
                                 activeOptions={{ exact: true }}
                                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -130,11 +126,26 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                                 }}
                             >
                                 <StickyNote size={20} />
-                                <span className="font-medium">Details</span>
+                                <span className="font-medium">New Patient</span>
                             </Link>
 
                         </div>
                     )}
+
+                    {/* Orders Section */}
+                    <Link
+                        to="/orders"
+                        onClick={() => setIsOpen(false)}
+                        activeOptions={{ exact: true }}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
+                        activeProps={{
+                            className:
+                                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                        }}
+                    >
+                        <StickyNote size={20} />
+                        <span className="font-medium">Orders</span>
+                    </Link>
 
                 </nav>
             </aside>

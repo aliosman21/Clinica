@@ -1,5 +1,7 @@
 - All Pages gets generated into the routes directory.
-
-- All schemas are in prisma/schema.prisma
-
-- 
+- All Schemas are in prisma/schema.prisma
+- All Custom components are in src/components and are separated by representations, inputs, layout, etc..
+- All Server functions/CRUDs are in the server/[domain] directories.
+- All pages should be centered and in the page container unless otherwise specified.
+- Any server call uses React query and Tanstack router's useMutation
+- Never use the alert() function for anything use toasts instead

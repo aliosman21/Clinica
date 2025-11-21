@@ -13,9 +13,12 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteRouteImport } from './routes/_authed/route'
 import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
-import { Route as AuthedPostsRouteRouteImport } from './routes/_authed/posts/route'
-import { Route as AuthedPostsIndexRouteImport } from './routes/_authed/posts/index'
-import { Route as AuthedPostsPostIdIndexRouteImport } from './routes/_authed/posts/$postId/index'
+import { Route as AuthedPatientsIndexRouteImport } from './routes/_authed/patients/index'
+import { Route as AuthedOrdersIndexRouteImport } from './routes/_authed/orders/index'
+import { Route as AuthedPatientsNewRouteImport } from './routes/_authed/patients/new'
+import { Route as AuthedPatientsPatientIdIndexRouteImport } from './routes/_authed/patients/$patientId/index'
+import { Route as AuthedOrdersOrderIdIndexRouteImport } from './routes/_authed/orders/$orderId/index'
+import { Route as AuthedPatientsPatientIdEditRouteImport } from './routes/_authed/patients/$patientId/edit'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -36,67 +39,110 @@ const AuthedIndexRoute = AuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedPostsRouteRoute = AuthedPostsRouteRouteImport.update({
-  id: '/posts',
-  path: '/posts',
+const AuthedPatientsIndexRoute = AuthedPatientsIndexRouteImport.update({
+  id: '/patients/',
+  path: '/patients/',
   getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedPostsIndexRoute = AuthedPostsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthedPostsRouteRoute,
+const AuthedOrdersIndexRoute = AuthedOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => AuthedRouteRoute,
 } as any)
-const AuthedPostsPostIdIndexRoute = AuthedPostsPostIdIndexRouteImport.update({
-  id: '/$postId/',
-  path: '/$postId/',
-  getParentRoute: () => AuthedPostsRouteRoute,
+const AuthedPatientsNewRoute = AuthedPatientsNewRouteImport.update({
+  id: '/patients/new',
+  path: '/patients/new',
+  getParentRoute: () => AuthedRouteRoute,
 } as any)
+const AuthedPatientsPatientIdIndexRoute =
+  AuthedPatientsPatientIdIndexRouteImport.update({
+    id: '/patients/$patientId/',
+    path: '/patients/$patientId/',
+    getParentRoute: () => AuthedRouteRoute,
+  } as any)
+const AuthedOrdersOrderIdIndexRoute =
+  AuthedOrdersOrderIdIndexRouteImport.update({
+    id: '/orders/$orderId/',
+    path: '/orders/$orderId/',
+    getParentRoute: () => AuthedRouteRoute,
+  } as any)
+const AuthedPatientsPatientIdEditRoute =
+  AuthedPatientsPatientIdEditRouteImport.update({
+    id: '/patients/$patientId/edit',
+    path: '/patients/$patientId/edit',
+    getParentRoute: () => AuthedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/posts': typeof AuthedPostsRouteRouteWithChildren
   '/': typeof AuthedIndexRoute
-  '/posts/': typeof AuthedPostsIndexRoute
-  '/posts/$postId': typeof AuthedPostsPostIdIndexRoute
+  '/patients/new': typeof AuthedPatientsNewRoute
+  '/orders': typeof AuthedOrdersIndexRoute
+  '/patients': typeof AuthedPatientsIndexRoute
+  '/patients/$patientId/edit': typeof AuthedPatientsPatientIdEditRoute
+  '/orders/$orderId': typeof AuthedOrdersOrderIdIndexRoute
+  '/patients/$patientId': typeof AuthedPatientsPatientIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/': typeof AuthedIndexRoute
-  '/posts': typeof AuthedPostsIndexRoute
-  '/posts/$postId': typeof AuthedPostsPostIdIndexRoute
+  '/patients/new': typeof AuthedPatientsNewRoute
+  '/orders': typeof AuthedOrdersIndexRoute
+  '/patients': typeof AuthedPatientsIndexRoute
+  '/patients/$patientId/edit': typeof AuthedPatientsPatientIdEditRoute
+  '/orders/$orderId': typeof AuthedOrdersOrderIdIndexRoute
+  '/patients/$patientId': typeof AuthedPatientsPatientIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authed': typeof AuthedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/_authed/posts': typeof AuthedPostsRouteRouteWithChildren
   '/_authed/': typeof AuthedIndexRoute
-  '/_authed/posts/': typeof AuthedPostsIndexRoute
-  '/_authed/posts/$postId/': typeof AuthedPostsPostIdIndexRoute
+  '/_authed/patients/new': typeof AuthedPatientsNewRoute
+  '/_authed/orders/': typeof AuthedOrdersIndexRoute
+  '/_authed/patients/': typeof AuthedPatientsIndexRoute
+  '/_authed/patients/$patientId/edit': typeof AuthedPatientsPatientIdEditRoute
+  '/_authed/orders/$orderId/': typeof AuthedOrdersOrderIdIndexRoute
+  '/_authed/patients/$patientId/': typeof AuthedPatientsPatientIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/login'
     | '/signup'
-    | '/posts'
     | '/'
-    | '/posts/'
-    | '/posts/$postId'
+    | '/patients/new'
+    | '/orders'
+    | '/patients'
+    | '/patients/$patientId/edit'
+    | '/orders/$orderId'
+    | '/patients/$patientId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/signup' | '/' | '/posts' | '/posts/$postId'
+  to:
+    | '/login'
+    | '/signup'
+    | '/'
+    | '/patients/new'
+    | '/orders'
+    | '/patients'
+    | '/patients/$patientId/edit'
+    | '/orders/$orderId'
+    | '/patients/$patientId'
   id:
     | '__root__'
     | '/_authed'
     | '/login'
     | '/signup'
-    | '/_authed/posts'
     | '/_authed/'
-    | '/_authed/posts/'
-    | '/_authed/posts/$postId/'
+    | '/_authed/patients/new'
+    | '/_authed/orders/'
+    | '/_authed/patients/'
+    | '/_authed/patients/$patientId/edit'
+    | '/_authed/orders/$orderId/'
+    | '/_authed/patients/$patientId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,51 +181,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/posts': {
-      id: '/_authed/posts'
-      path: '/posts'
-      fullPath: '/posts'
-      preLoaderRoute: typeof AuthedPostsRouteRouteImport
+    '/_authed/patients/': {
+      id: '/_authed/patients/'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof AuthedPatientsIndexRouteImport
       parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/posts/': {
-      id: '/_authed/posts/'
-      path: '/'
-      fullPath: '/posts/'
-      preLoaderRoute: typeof AuthedPostsIndexRouteImport
-      parentRoute: typeof AuthedPostsRouteRoute
+    '/_authed/orders/': {
+      id: '/_authed/orders/'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof AuthedOrdersIndexRouteImport
+      parentRoute: typeof AuthedRouteRoute
     }
-    '/_authed/posts/$postId/': {
-      id: '/_authed/posts/$postId/'
-      path: '/$postId'
-      fullPath: '/posts/$postId'
-      preLoaderRoute: typeof AuthedPostsPostIdIndexRouteImport
-      parentRoute: typeof AuthedPostsRouteRoute
+    '/_authed/patients/new': {
+      id: '/_authed/patients/new'
+      path: '/patients/new'
+      fullPath: '/patients/new'
+      preLoaderRoute: typeof AuthedPatientsNewRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/patients/$patientId/': {
+      id: '/_authed/patients/$patientId/'
+      path: '/patients/$patientId'
+      fullPath: '/patients/$patientId'
+      preLoaderRoute: typeof AuthedPatientsPatientIdIndexRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/orders/$orderId/': {
+      id: '/_authed/orders/$orderId/'
+      path: '/orders/$orderId'
+      fullPath: '/orders/$orderId'
+      preLoaderRoute: typeof AuthedOrdersOrderIdIndexRouteImport
+      parentRoute: typeof AuthedRouteRoute
+    }
+    '/_authed/patients/$patientId/edit': {
+      id: '/_authed/patients/$patientId/edit'
+      path: '/patients/$patientId/edit'
+      fullPath: '/patients/$patientId/edit'
+      preLoaderRoute: typeof AuthedPatientsPatientIdEditRouteImport
+      parentRoute: typeof AuthedRouteRoute
     }
   }
 }
 
-interface AuthedPostsRouteRouteChildren {
-  AuthedPostsIndexRoute: typeof AuthedPostsIndexRoute
-  AuthedPostsPostIdIndexRoute: typeof AuthedPostsPostIdIndexRoute
-}
-
-const AuthedPostsRouteRouteChildren: AuthedPostsRouteRouteChildren = {
-  AuthedPostsIndexRoute: AuthedPostsIndexRoute,
-  AuthedPostsPostIdIndexRoute: AuthedPostsPostIdIndexRoute,
-}
-
-const AuthedPostsRouteRouteWithChildren =
-  AuthedPostsRouteRoute._addFileChildren(AuthedPostsRouteRouteChildren)
-
 interface AuthedRouteRouteChildren {
-  AuthedPostsRouteRoute: typeof AuthedPostsRouteRouteWithChildren
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedPatientsNewRoute: typeof AuthedPatientsNewRoute
+  AuthedOrdersIndexRoute: typeof AuthedOrdersIndexRoute
+  AuthedPatientsIndexRoute: typeof AuthedPatientsIndexRoute
+  AuthedPatientsPatientIdEditRoute: typeof AuthedPatientsPatientIdEditRoute
+  AuthedOrdersOrderIdIndexRoute: typeof AuthedOrdersOrderIdIndexRoute
+  AuthedPatientsPatientIdIndexRoute: typeof AuthedPatientsPatientIdIndexRoute
 }
 
 const AuthedRouteRouteChildren: AuthedRouteRouteChildren = {
-  AuthedPostsRouteRoute: AuthedPostsRouteRouteWithChildren,
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedPatientsNewRoute: AuthedPatientsNewRoute,
+  AuthedOrdersIndexRoute: AuthedOrdersIndexRoute,
+  AuthedPatientsIndexRoute: AuthedPatientsIndexRoute,
+  AuthedPatientsPatientIdEditRoute: AuthedPatientsPatientIdEditRoute,
+  AuthedOrdersOrderIdIndexRoute: AuthedOrdersOrderIdIndexRoute,
+  AuthedPatientsPatientIdIndexRoute: AuthedPatientsPatientIdIndexRoute,
 }
 
 const AuthedRouteRouteWithChildren = AuthedRouteRoute._addFileChildren(

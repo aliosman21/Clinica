@@ -1,0 +1,275 @@
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useServerFn } from '@tanstack/react-start'
+import { CustomTable, type TableColumn, type PaginationInfo } from '~/components/Representations/CustomTable'
+import { CustomTextInput } from '~/components/Inputs/CustomTextInput'
+import { ConfirmDialog, useConfirmDialog } from '~/components/Representations/ConfirmDialog'
+import { Button } from '~/components/ui/button'
+import { Badge } from '~/components/ui/badge'
+import { getPatients } from '~/server/patients/get-patients'
+import { deletePatient } from '~/server/patients/delete-patient'
+import { useDebounce } from '~/hooks/useDebounce'
+import { Trash2, Edit, Plus, Eye } from 'lucide-react'
+import { toast } from 'sonner'
+
+type Patient = {
+    id: string
+    name: string
+    email: string | null
+    phone: string | null
+    dateOfBirth: Date | null
+    createdAt: Date
+    _count: {
+        orders: number
+    }
+}
+
+export const Route = createFileRoute('/_authed/patients/')({
+    loader: () => getPatients({ data: { limit: 5, offset: 0 } }),
+    component: PatientsPage,
+})
+
+function PatientsPage() {
+    const navigate = useNavigate()
+    const queryClient = useQueryClient()
+    const [searchTerm, setSearchTerm] = useState('')
+    const debouncedSearchTerm = useDebounce(searchTerm, 500)
+    const [pagination, setPagination] = useState<PaginationInfo>({
+        total: 0,
+        limit: 5,
+        offset: 0,
+        hasMore: false
+    })
+    const { dialogState, openDialog, closeDialog, handleConfirm } = useConfirmDialog()
+    // Server functions
+    const getPatientsFn = useServerFn(getPatients)
+    const deletePatientFn = useServerFn(deletePatient)
+
+    // Query for patients
+    const {
+        data: patientsData,
+        isLoading,
+        error,
+        refetch
+    } = useQuery({
+        queryKey: ['patients', pagination.limit, pagination.offset, debouncedSearchTerm],
+        queryFn: () => getPatientsFn({
+            data: {
+                limit: pagination.limit,
+                offset: pagination.offset,
+                name: debouncedSearchTerm || undefined
+            }
+        }),
+        staleTime: 30000, // 30 seconds
+    })
+
+    // Reset pagination when search term changes
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, offset: 0 }))
+    }, [debouncedSearchTerm])
+
+    // Mutation for deleting patients
+    const deletePatientMutation = useMutation({
+        mutationFn: (id: string) => deletePatientFn({ data: { id } }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['patients'] })
+            toast.success('Patient deleted successfully')
+            closeDialog()
+        },
+        onError: (error) => {
+            toast.error('Error deleting patient: ' + (error as Error).message)
+            closeDialog()
+        }
+    })
+
+    const handleSearch = (term: string) => {
+        setSearchTerm(term)
+    }
+
+    const handlePageChange = (offset: number) => {
+        setPagination(prev => ({ ...prev, offset }))
+    }
+
+    const handlePageSizeChange = (limit: number) => {
+        setPagination(prev => ({ ...prev, limit, offset: 0 }))
+    }
+
+    const handleDeletePatient = (patientId: string) => {
+        openDialog({
+            title: 'Delete Patient',
+            description: 'Are you sure you want to delete this patient? This action cannot be undone.',
+            id: patientId,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            variant: 'destructive',
+            onConfirm: (id: string) => {
+                deletePatientMutation.mutate(id)
+            }
+        })
+    }
+
+    const patients = patientsData?.patients || []
+    const currentPagination = patientsData?.pagination || pagination
+
+    const columns: TableColumn<Patient>[] = [
+        {
+            key: 'name',
+            header: 'Name',
+            headerClassName: 'text-center',
+            accessor: 'name',
+            className: 'font-medium'
+        },
+        {
+            key: 'email',
+            header: 'Email',
+            headerClassName: 'text-center',
+            render: (patient) => patient.email || '-',
+        },
+        {
+            key: 'phone',
+            header: 'Phone',
+            headerClassName: 'text-center',
+            render: (patient) => patient.phone || '-',
+        },
+        {
+            key: 'dateOfBirth',
+            header: 'Date of Birth',
+            headerClassName: 'text-center',
+            render: (patient) =>
+                patient.dateOfBirth
+                    ? new Date(patient.dateOfBirth).toLocaleDateString()
+                    : '-',
+        },
+        {
+            key: 'orders',
+            header: 'Orders',
+            headerClassName: 'text-center',
+            render: (patient) => (
+                <Badge variant="secondary">
+                    {patient._count.orders} orders
+                </Badge>
+            ),
+            className: 'text-center'
+        },
+        {
+            key: 'createdAt',
+            header: 'Created',
+            headerClassName: 'text-center',
+            render: (patient) => new Date(patient.createdAt).toLocaleDateString(),
+            className: 'text-muted-foreground text-sm'
+        }
+    ]
+
+    if (error) {
+        return (
+            <div className="container mx-auto py-8">
+                <div className="text-center text-red-500">
+                    Error loading patients: {(error as Error).message}
+                    <br />
+                    <Button onClick={() => refetch()} className="mt-4">
+                        Try Again
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="container mx-auto py-4 space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold">Patients</h1>
+                    <p className="text-muted-foreground">
+                        Manage patient information and records
+                    </p>
+                </div>
+                <Button onClick={() => navigate({ to: '/patients/new' })}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Patient
+                </Button>
+            </div>
+
+
+
+            {/* Search */}
+            <div className="flex items-center space-x-2">
+                <div className="flex-1 max-w-sm">
+                    <CustomTextInput
+                        field={{
+                            name: 'search',
+                            state: {
+                                value: searchTerm,
+                                meta: {
+                                    errors: [],
+                                    isTouched: false,
+                                    isBlurred: false,
+                                    isDirty: false,
+                                    errorMap: {},
+                                    errorSourceMap: {},
+                                    isValidating: false
+                                }
+                            },
+                            handleChange: handleSearch,
+                            handleBlur: () => { }
+                        }}
+                        placeholder="Search patients by name..."
+                    />
+                </div>
+            </div>
+
+            {/* Table */}
+            <CustomTable
+                data={patients}
+                columns={columns}
+                pagination={currentPagination}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                loading={isLoading}
+                emptyMessage="No patients found"
+                actions={(patient) => (
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate({ to: '/patients/$patientId', params: { patientId: patient.id } })}
+                        >
+                            <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate({ to: '/patients/$patientId/edit', params: { patientId: patient.id } })}
+                        >
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletePatient(patient.id)}
+                            className="text-destructive hover:text-destructive"
+                            disabled={deletePatientMutation.isPending}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
+            />
+
+            {/* Confirm Dialog */}
+            <ConfirmDialog
+                isOpen={dialogState.isOpen}
+                onClose={closeDialog}
+                onConfirm={handleConfirm}
+                title={dialogState.title}
+                description={dialogState.description}
+                confirmText={dialogState.confirmText}
+                cancelText={dialogState.cancelText}
+                id={dialogState.id}
+                variant={dialogState.variant}
+                isLoading={deletePatientMutation.isPending}
+            />
+        </div>
+    )
+}

@@ -13,6 +13,7 @@ import { NotFound } from '~/components/Layout/NotFound.js'
 import appCss from '~/styles/app.css?url'
 import { seo } from '~/utils/general/seo.js'
 import { fetchUser } from '~/server/auth/user'
+import { Toaster } from 'sonner'
 
 
 
@@ -35,8 +36,8 @@ export const Route = createRootRoute({
       },
       ...seo({
         title:
-          'TanStack Start | Type-Safe, Client-First, Full-Stack React Framework',
-        description: `TanStack Start is a type-safe, client-first, full-stack React framework. `,
+          'Clinica',
+        description: `Simple lab tests management system.`,
       }),
     ],
     links: [
@@ -98,6 +99,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {children}
           </main>
         </div>
+        <Toaster position="top-right" />
         <TanStackRouterDevtools position="bottom-right" />
         <Scripts />
       </body>
