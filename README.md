@@ -40,7 +40,7 @@ A modern clinic management system built with TanStack Start, Prisma, and TypeScr
    yarn dev
    ```
 7. **Running the e2e tests**
-```bash
+   ```bash
    yarn test:e2e
    ```
 
