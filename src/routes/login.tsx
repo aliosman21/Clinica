@@ -80,12 +80,11 @@ function RouteComponent() {
               field={field}
               label="Password"
               placeholder="Enter your password"
+              password
             />
           )}
         </Field>
       </div>
-
-
 
       <Subscribe
         selector={(state) => [state.canSubmit, state.isTouched]}

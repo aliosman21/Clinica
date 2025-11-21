@@ -3,6 +3,8 @@ import { AnyFieldMetaBase } from '@tanstack/react-form'
 import { cn } from '~/lib/utils';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 
 export type FieldProps<T> = {
     name: string;
@@ -26,6 +28,7 @@ export type CustomTextInputProps = {
     disabled?: boolean;
     showCharCount?: boolean;
     className?: string;
+    password?: boolean;
 };
 
 export function CustomTextInput({
@@ -40,7 +43,9 @@ export function CustomTextInput({
     maxLength,
     showCharCount,
     className,
+    password = false,
 }: CustomTextInputProps) {
+    const [showPassword, setShowPassword] = useState(false);
     const currentLength = field.state.value?.length || 0;
 
     const hasError = field.state.meta.isTouched &&
@@ -62,8 +67,10 @@ export function CustomTextInput({
         disabled,
         placeholder,
         maxLength,
+        type: password && !showPassword ? 'password' : 'text',
         className: cn(
             hasError && "border-red-500 focus-visible:ring-red-500",
+            password && "pr-10", // Add padding for the toggle button
             className
         ),
     };
@@ -90,7 +97,24 @@ export function CustomTextInput({
                     )}
                 />
             ) : (
-                <Input {...inputProps} />
+                <div className="relative">
+                    <Input {...inputProps} />
+                    {password && (
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            disabled={disabled}
+                            tabIndex={-1}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                            ) : (
+                                <Eye className="h-4 w-4" />
+                            )}
+                        </button>
+                    )}
+                </div>
             )}
 
             <div className="flex justify-between items-start">

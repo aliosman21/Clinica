@@ -6,11 +6,78 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   email    String @id @unique
   password String
+}
+
+model Patient {
+  id          String   @id @default(uuid())
+  name        String
+  dateOfBirth DateTime
+  email       String?
+  phone       String?
+  address     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orders Order[]
+}
+
+model LabTest {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  name            String
+  description     String?
+  price           Float
+  turnaroundHours Int // turnaround time in hours
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  orderItems OrderItem[]
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  orderNumber    String      @unique @default(uuid())
+  patientId      String
+  status         OrderStatus @default(PENDING)
+  totalCost      Float       @default(0)
+  estimatedReady DateTime?
+  actualReady    DateTime?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  patient    Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  labTestId String
+  quantity  Int    @default(1)
+  unitPrice Float
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  labTest LabTest @relation(fields: [labTestId], references: [id])
+
+  @@unique([orderId, labTestId])
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }

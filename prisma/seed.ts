@@ -1,0 +1,385 @@
+import { PrismaClient, OrderStatus } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+async function main() {
+    console.log('🌱 Starting seed process...')
+
+    // Clear existing data (except Users)
+    await prisma.orderItem.deleteMany()
+    await prisma.order.deleteMany()
+    await prisma.labTest.deleteMany()
+    await prisma.patient.deleteMany()
+
+    console.log('🧹 Cleared existing data')
+
+    // Create Lab Tests
+    const labTests = await Promise.all([
+        prisma.labTest.create({
+            data: {
+                code: 'CBC',
+                name: 'Complete Blood Count',
+                description: 'Measures different components and features of blood',
+                price: 45.00,
+                turnaroundHours: 24,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'CMP',
+                name: 'Comprehensive Metabolic Panel',
+                description: 'Tests glucose, electrolytes, kidney and liver function',
+                price: 65.00,
+                turnaroundHours: 48,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'LIPID',
+                name: 'Lipid Panel',
+                description: 'Cholesterol and triglyceride levels',
+                price: 55.00,
+                turnaroundHours: 24,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'TSH',
+                name: 'Thyroid Stimulating Hormone',
+                description: 'Measures thyroid function',
+                price: 35.00,
+                turnaroundHours: 72,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'HBA1C',
+                name: 'Hemoglobin A1C',
+                description: 'Average blood sugar over 2-3 months',
+                price: 40.00,
+                turnaroundHours: 24,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'PSA',
+                name: 'Prostate Specific Antigen',
+                description: 'Prostate cancer screening',
+                price: 50.00,
+                turnaroundHours: 48,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'VITD',
+                name: 'Vitamin D, 25-Hydroxy',
+                description: 'Vitamin D deficiency screening',
+                price: 60.00,
+                turnaroundHours: 96,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'CRP',
+                name: 'C-Reactive Protein',
+                description: 'Inflammation marker',
+                price: 30.00,
+                turnaroundHours: 24,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'FERR',
+                name: 'Ferritin',
+                description: 'Iron storage levels',
+                price: 38.00,
+                turnaroundHours: 48,
+                isActive: true
+            }
+        }),
+        prisma.labTest.create({
+            data: {
+                code: 'COVID',
+                name: 'COVID-19 PCR Test',
+                description: 'SARS-CoV-2 detection',
+                price: 85.00,
+                turnaroundHours: 12,
+                isActive: false // Discontinued
+            }
+        })
+    ])
+
+    console.log(`✅ Created ${labTests.length} lab tests`)
+
+    // Create Patients
+    const patients = await Promise.all([
+        prisma.patient.create({
+            data: {
+                name: 'John Smith',
+                dateOfBirth: new Date('1985-03-15'),
+                email: 'john.smith@email.com',
+                phone: '(555) 123-4567',
+                address: '123 Main St, Anytown, ST 12345'
+            }
+        }),
+        prisma.patient.create({
+            data: {
+                name: 'Maria Garcia',
+                dateOfBirth: new Date('1978-07-22'),
+                email: 'maria.garcia@email.com',
+                phone: '(555) 987-6543',
+                address: '456 Oak Ave, Somewhere, ST 67890'
+            }
+        }),
+        prisma.patient.create({
+            data: {
+                name: 'Robert Johnson',
+                dateOfBirth: new Date('1965-11-08'),
+                email: 'r.johnson@email.com',
+                phone: '(555) 456-7890',
+                address: '789 Pine Rd, Elsewhere, ST 54321'
+            }
+        }),
+        prisma.patient.create({
+            data: {
+                name: 'Sarah Williams',
+                dateOfBirth: new Date('1992-01-30'),
+                email: 'sarah.w@email.com',
+                phone: '(555) 321-9876',
+                address: '321 Elm St, Nowhere, ST 98765'
+            }
+        }),
+        prisma.patient.create({
+            data: {
+                name: 'Michael Brown',
+                dateOfBirth: new Date('1980-09-14'),
+                email: 'mike.brown@email.com',
+                phone: '(555) 654-3210',
+                address: '654 Maple Dr, Anywhere, ST 13579'
+            }
+        }),
+        prisma.patient.create({
+            data: {
+                name: 'Emily Davis',
+                dateOfBirth: new Date('1995-05-18'),
+                email: null, // Some patients might not have email
+                phone: '(555) 789-0123',
+                address: '987 Cedar Ln, Someplace, ST 24680'
+            }
+        })
+    ])
+
+    console.log(`✅ Created ${patients.length} patients`)
+
+    // Create Orders with OrderItems
+    const now = new Date()
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+
+    // Order 1: John Smith - Routine checkup
+    const order1 = await prisma.order.create({
+        data: {
+            patientId: patients[0].id,
+            status: OrderStatus.COMPLETED,
+            notes: 'Annual physical exam - routine labs',
+            createdAt: threeDaysAgo,
+            actualReady: yesterday,
+            estimatedReady: new Date(threeDaysAgo.getTime() + 48 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[0].id, // CBC
+                        quantity: 1,
+                        unitPrice: labTests[0].price
+                    },
+                    {
+                        labTestId: labTests[1].id, // CMP
+                        quantity: 1,
+                        unitPrice: labTests[1].price
+                    },
+                    {
+                        labTestId: labTests[2].id, // LIPID
+                        quantity: 1,
+                        unitPrice: labTests[2].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Order 2: Maria Garcia - Diabetes monitoring
+    const order2 = await prisma.order.create({
+        data: {
+            patientId: patients[1].id,
+            status: OrderStatus.IN_PROGRESS,
+            notes: 'Diabetes follow-up',
+            createdAt: yesterday,
+            estimatedReady: new Date(now.getTime() + 24 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[4].id, // HBA1C
+                        quantity: 1,
+                        unitPrice: labTests[4].price
+                    },
+                    {
+                        labTestId: labTests[0].id, // CBC
+                        quantity: 1,
+                        unitPrice: labTests[0].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Order 3: Robert Johnson - Prostate screening
+    const order3 = await prisma.order.create({
+        data: {
+            patientId: patients[2].id,
+            status: OrderStatus.PENDING,
+            notes: 'Prostate screening - age 58',
+            createdAt: now,
+            estimatedReady: new Date(now.getTime() + 48 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[5].id, // PSA
+                        quantity: 1,
+                        unitPrice: labTests[5].price
+                    },
+                    {
+                        labTestId: labTests[0].id, // CBC
+                        quantity: 1,
+                        unitPrice: labTests[0].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Order 4: Sarah Williams - Thyroid check
+    const order4 = await prisma.order.create({
+        data: {
+            patientId: patients[3].id,
+            status: OrderStatus.COMPLETED,
+            notes: 'Fatigue and weight gain symptoms',
+            createdAt: new Date(twoDaysAgo.getTime() - 2 * 60 * 60 * 1000),
+            actualReady: now,
+            estimatedReady: new Date(twoDaysAgo.getTime() + 72 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[3].id, // TSH
+                        quantity: 1,
+                        unitPrice: labTests[3].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Order 5: Michael Brown - Comprehensive wellness
+    const order5 = await prisma.order.create({
+        data: {
+            patientId: patients[4].id,
+            status: OrderStatus.PENDING,
+            notes: 'Executive health screening',
+            createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+            estimatedReady: new Date(now.getTime() + 96 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[0].id, // CBC
+                        quantity: 1,
+                        unitPrice: labTests[0].price
+                    },
+                    {
+                        labTestId: labTests[1].id, // CMP
+                        quantity: 1,
+                        unitPrice: labTests[1].price
+                    },
+                    {
+                        labTestId: labTests[2].id, // LIPID
+                        quantity: 1,
+                        unitPrice: labTests[2].price
+                    },
+                    {
+                        labTestId: labTests[6].id, // VITD
+                        quantity: 1,
+                        unitPrice: labTests[6].price
+                    },
+                    {
+                        labTestId: labTests[8].id, // FERR
+                        quantity: 1,
+                        unitPrice: labTests[8].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Order 6: Emily Davis - Inflammation check
+    const order6 = await prisma.order.create({
+        data: {
+            patientId: patients[5].id,
+            status: OrderStatus.CANCELLED,
+            notes: 'Patient cancelled - insurance issues',
+            createdAt: new Date(now.getTime() - 6 * 60 * 60 * 1000),
+            orderItems: {
+                create: [
+                    {
+                        labTestId: labTests[7].id, // CRP
+                        quantity: 1,
+                        unitPrice: labTests[7].price
+                    }
+                ]
+            }
+        }
+    })
+
+    // Update total costs for all orders
+    const orders = [order1, order2, order3, order4, order5, order6]
+    for (const order of orders) {
+        const orderItems = await prisma.orderItem.findMany({
+            where: { orderId: order.id }
+        })
+        const totalCost = orderItems.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0)
+
+        await prisma.order.update({
+            where: { id: order.id },
+            data: { totalCost }
+        })
+    }
+
+    console.log(`✅ Created ${orders.length} orders with order items`)
+
+    const summary = await prisma.order.groupBy({
+        by: ['status'],
+        _count: true
+    })
+
+    console.log('📊 Orders by status:')
+    summary.forEach(group => {
+        console.log(`   ${group.status}: ${group._count} orders`)
+    })
+
+    console.log('🎉 Seed completed successfully!')
+}
+
+main()
+    .catch((e) => {
+        console.error('❌ Seed failed:', e)
+        process.exit(1)
+    })
+    .finally(async () => {
+        await prisma.$disconnect()
+    })

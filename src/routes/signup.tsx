@@ -74,6 +74,7 @@ function RouteComponent() {
               field={field}
               label="Password"
               placeholder="Enter your password"
+              password
             />
           )}
         </Field>
