@@ -43,9 +43,17 @@ function RouteComponent() {
 
 
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
   return <div className=" flex items-center justify-center">
     <div
       className="max-w-md w-full space-y-4 p-6 border rounded-lg"
+      onKeyDown={handleKeyDown}
     >
       <h1 className="text-2xl font-bold text-center">Login</h1>
 

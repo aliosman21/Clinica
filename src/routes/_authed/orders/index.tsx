@@ -133,11 +133,15 @@ function OrdersPage() {
             key: 'orderNumber',
             header: 'Order #',
             accessor: 'orderNumber',
+            headerClassName: 'text-center',
+
             className: 'font-medium'
         },
         {
             key: 'patient',
             header: 'Patient',
+            headerClassName: 'text-center',
+
             render: (order) => (
                 <div>
                     <p className="font-medium">{order.patient.name}</p>
@@ -148,6 +152,8 @@ function OrdersPage() {
         {
             key: 'items',
             header: 'Tests',
+            headerClassName: 'text-center',
+
             render: (order) => (
                 <div>
                     <p className="text-sm">{order._count?.orderItems || order.orderItems.length} test{(order._count?.orderItems || order.orderItems.length) !== 1 ? 's' : ''}</p>
@@ -167,6 +173,8 @@ function OrdersPage() {
         {
             key: 'totalAmount',
             header: 'Total',
+            headerClassName: 'text-center',
+
             render: (order) => {
                 const total = order.totalCost ||
                     (order.orderItems?.reduce((sum: number, item) =>
@@ -179,6 +187,8 @@ function OrdersPage() {
         {
             key: 'status',
             header: 'Status',
+            headerClassName: 'text-center',
+
             render: (order) => (
                 <Badge variant={getStatusBadgeVariant(order.status) as any}>
                     {order.status}
@@ -189,6 +199,8 @@ function OrdersPage() {
         {
             key: 'estimatedReady',
             header: 'Est. Ready',
+            headerClassName: 'text-center',
+
             render: (order) =>
                 order.estimatedReady
                     ? new Date(order.estimatedReady).toLocaleDateString()
@@ -198,6 +210,8 @@ function OrdersPage() {
         {
             key: 'createdAt',
             header: 'Created',
+            headerClassName: 'text-center',
+
             render: (order) => new Date(order.createdAt).toLocaleDateString(),
             className: 'text-muted-foreground text-sm'
         }

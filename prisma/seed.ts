@@ -1,4 +1,5 @@
 import { PrismaClient, OrderStatus } from '@prisma/client'
+import { hashPassword } from '~/utils/auth/password'
 
 const prisma = new PrismaClient()
 
@@ -20,8 +21,18 @@ async function main() {
     await prisma.order.deleteMany()
     await prisma.labTest.deleteMany()
     await prisma.patient.deleteMany()
+    await prisma.user.deleteMany()
 
     console.log('🧹 Cleared existing data')
+    const password = await hashPassword('Aa1234!!')
+
+    await prisma.user.create({
+        data: {
+            email: 'ali@test.com',
+            password: password
+
+        }
+    })
 
     // Create Lab Tests
     const labTests = await Promise.all([

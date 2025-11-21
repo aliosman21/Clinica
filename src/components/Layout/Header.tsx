@@ -3,11 +3,13 @@ import { useServerFn } from '@tanstack/react-start'
 import {
     ChevronDown,
     ChevronRight,
-    Home,
     Menu,
-    StickyNote,
+    Users,
+    UserPlus,
+    FileText,
+    Plus,
 } from 'lucide-react'
-import { Activity, useState } from 'react'
+import { useState } from 'react'
 import { logoutFn } from '~/server/auth/logout'
 
 interface HeaderProps {
@@ -30,9 +32,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
             <header className="p-4 flex justify-between items-center bg-gray-800 text-white shadow-lg">
 
                 <div className='flex'>
-                    <Activity mode={user ? "visible" : "hidden"}>
-
-
+                    {user && (
                         <button
                             onClick={() => setIsOpen(!isOpen)}
                             className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
@@ -40,7 +40,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                         >
                             <Menu size={24} />
                         </button>
-                    </Activity>
+                    )}
 
                     <h1 className="ml-4 text-xl font-semibold">
                         <Link to="/patients" disabled={!user}>
@@ -52,11 +52,11 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                         </Link>
                     </h1>
                 </div>
-                <Activity mode={user ? "visible" : "hidden"}>
+                {user && (
                     <div onClick={() => logout()} className='cursor-pointer'>
                         Logout
                     </div>
-                </Activity>
+                )}
 
             </header>
 
@@ -82,7 +82,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                                     'flex-1 flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors',
                             }}
                         >
-                            <StickyNote size={20} />
+                            <Users size={20} />
                             <span className="font-medium">Patients</span>
                         </Link>
                         <button
@@ -113,7 +113,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                                         'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
                                 }}
                             >
-                                <StickyNote size={20} />
+                                <UserPlus size={20} />
                                 <span className="font-medium">New Patient</span>
                             </Link>
 
@@ -132,7 +132,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                                     'flex-1 flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors',
                             }}
                         >
-                            <StickyNote size={20} />
+                            <FileText size={20} />
                             <span className="font-medium">Orders</span>
                         </Link>
                         <button
@@ -164,7 +164,7 @@ export default function Header({ isOpen, setIsOpen, user }: HeaderProps) {
                                         'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
                                 }}
                             >
-                                <StickyNote size={20} />
+                                <Plus size={20} />
                                 <span className="font-medium">New Order</span>
                             </Link>
                         </div>
