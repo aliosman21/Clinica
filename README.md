@@ -21,7 +21,7 @@ A modern clinic management system built with TanStack Start, Prisma, and TypeScr
    ```
 
 3. **Configure environment**
-   - Rename the `.env.example` to `.env` and update the `DATABASE_URL`
+   - Open the `.env` and update the `DATABASE_URL`
 
 
 
