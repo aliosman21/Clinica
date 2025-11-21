@@ -179,7 +179,7 @@ function PatientsPage() {
                         Manage patient information and records
                     </p>
                 </div>
-                <Button onClick={() => navigate({ to: '/patients/new' })}>
+                <Button name='add-patient' onClick={() => navigate({ to: '/patients/new' })}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Patient
                 </Button>

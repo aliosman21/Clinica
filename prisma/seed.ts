@@ -25,12 +25,21 @@ async function main() {
 
     console.log('🧹 Cleared existing data')
     const password = await hashPassword('Aa1234!!')
+    const testPassword = await hashPassword('password123')
 
+    // Create main admin user
     await prisma.user.create({
         data: {
             email: 'ali@test.com',
             password: password
+        }
+    })
 
+    // Create test user for e2e tests
+    await prisma.user.create({
+        data: {
+            email: 'test@example.com',
+            password: testPassword
         }
     })
 

@@ -1,72 +1,120 @@
-# Welcome to TanStack.com!
+# Clinica - Medical Lab Management System
 
-This site is built with TanStack Router!
+A full-stack clinic management system built with TanStack Start and React, featuring patient management, lab order processing, and comprehensive testing workflows.
 
-- [TanStack Router Docs](https://tanstack.com/router)
+## Tech Stack
 
-It's deployed automagically with Netlify!
-
-- [Netlify](https://netlify.com/)
+- **Frontend**: React 19, TanStack Router, TanStack Start
+- **Backend**: TanStack Start server functions
+- **Database**: Prisma ORM with PostgreSQL/SQLite
+- **Styling**: Tailwind CSS, Shadcn/ui
+- **Testing**: Cypress E2E, Vitest unit tests
 
 ## Development
 
 From your terminal:
 
 ```sh
-pnpm install
-pnpm dev
+npm install
+npm run seed        # Set up the database with sample data
+npm run dev         # Start development server on http://localhost:3000
 ```
 
 This starts your app in development mode, rebuilding assets on file changes.
 
-## Editing and previewing the docs of TanStack projects locally
+## Testing
 
-The documentations for all TanStack projects except for `React Charts` are hosted on [https://tanstack.com](https://tanstack.com), powered by this TanStack Router app.
-In production, the markdown doc pages are fetched from the GitHub repos of the projects, but in development they are read from the local file system.
-
-Follow these steps if you want to edit the doc pages of a project (in these steps we'll assume it's [`TanStack/form`](https://github.com/tanstack/form)) and preview them locally :
-
-1. Create a new directory called `tanstack`.
+The project includes comprehensive end-to-end testing with Cypress:
 
 ```sh
-mkdir tanstack
+# Interactive testing (recommended for development)
+npm run test:e2e:dev
+
+# Headless testing (for CI/CD)
+npm run test:e2e
+
+# Unit tests
+npm run test
 ```
 
-2. Enter the directory and clone this repo and the repo of the project there.
+See [TESTING.md](./TESTING.md) for detailed testing documentation.
+
+## Features
+
+- **Patient Management**: Create, view, edit, and manage patient records
+- **Lab Orders**: Process lab test orders with status tracking
+- **Authentication**: Secure login/signup with session management
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Data Validation**: Comprehensive form validation and error handling
+- **E2E Testing**: Full test coverage for all user workflows
+
+## Database Setup
+
+The application uses Prisma for database management:
 
 ```sh
-cd tanstack
-git clone git@github.com:TanStack/tanstack.com.git
-git clone git@github.com:TanStack/form.git
+# Generate Prisma client
+npm run prisma-generate
+
+# Run migrations
+npx prisma migrate dev
+
+# Seed the database with sample data
+npm run seed
+
+# Open Prisma Studio for data visualization
+npx prisma studio
 ```
 
-> [!NOTE]
-> Your `tanstack` directory should look like this:
->
-> ```
-> tanstack/
->    |
->    +-- form/
->    |
->    +-- tanstack.com/
-> ```
+## Project Structure
 
-> [!WARNING]
-> Make sure the name of the directory in your local file system matches the name of the project's repo. For example, `tanstack/form` must be cloned into `form` (this is the default) instead of `some-other-name`, because that way, the doc pages won't be found.
-
-3. Enter the `tanstack/tanstack.com` directory, install the dependencies and run the app in dev mode:
-
-```sh
-cd tanstack.com
-pnpm i
-# The app will run on https://localhost:3000 by default
-pnpm dev
+```
+src/
+├── components/          # Reusable UI components
+│   ├── Inputs/         # Form input components
+│   ├── Layout/         # Layout components (Header, etc.)
+│   ├── Representations/ # Data display components
+│   └── ui/             # Shadcn/ui components
+├── routes/             # TanStack Router pages
+│   ├── login.tsx       # Authentication pages
+│   ├── signup.tsx
+│   └── _authed/        # Protected routes
+│       ├── patients/   # Patient management
+│       └── orders/     # Lab order management
+├── server/             # Server-side functions
+│   ├── auth/           # Authentication logic
+│   ├── patients/       # Patient CRUD operations
+│   └── orders/         # Order management
+└── utils/              # Utility functions
+    ├── auth/           # Authentication utilities
+    └── database/       # Database configuration
 ```
 
-4. Now you can visit http://localhost:3000/form/latest/docs/overview in the browser and see the changes you make in `tanstack/form/docs`.
+## Key Routes
 
-> [!NOTE]
-> The updated pages need to be manually reloaded in the browser.
+- `/` - Dashboard (requires authentication)
+- `/login` - User login
+- `/signup` - User registration  
+- `/patients` - Patient list and management
+- `/orders` - Lab order management
 
-> [!WARNING]
-> You will need to update the `docs/config.json` file (in the project's repo) if you add a new doc page!
+## Environment Variables
+
+Create a `.env` file with:
+
+```env
+DATABASE_URL="your-database-connection-string"
+SESSION_SECRET="your-session-secret"
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests: `npm run test:e2e`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
